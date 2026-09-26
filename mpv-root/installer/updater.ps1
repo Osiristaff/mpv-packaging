@@ -170,7 +170,7 @@ function Extract-Archive ($file) {
 function Get-Latest-Mpv($Arch) {
     $filename = ""
     $download_link = ""
-    $api_gh = "https://api.github.com/repos/zhongfly/mpv-winbuild/releases/latest"
+    $api_gh = "https://api.github.com/repos/Osiristaff/mpv-winbuild/releases/latest"
     $json = Invoke-GitHubApi $api_gh | ConvertFrom-Json
     $filename = $json.assets | where { $_.name -Match "mpv-$Arch-[0-9]{8}" } | Select-Object -ExpandProperty name
     $download_link = $json.assets | where { $_.name -Match "mpv-$Arch-[0-9]{8}" } | Select-Object -ExpandProperty browser_download_url
@@ -214,7 +214,7 @@ function Get-Latest-Ytplugin ($plugin) {
 }
 
 function Get-Latest-FFmpeg ($Arch) {
-    $api_gh = "https://api.github.com/repos/zhongfly/mpv-winbuild/releases/latest"
+    $api_gh = "https://api.github.com/repos/Osiristaff/mpv-winbuild/releases/latest"
     $json = Invoke-GitHubApi $api_gh | ConvertFrom-Json
     $filename = $json.assets | where { $_.name -Match "ffmpeg-$Arch-git-" } | Select-Object -ExpandProperty name
     $download_link = $json.assets | where { $_.name -Match "ffmpeg-$Arch-git-" } | Select-Object -ExpandProperty browser_download_url
@@ -405,21 +405,11 @@ function Check-Arch($arch) {
     if (-not (Test-Path $file)) { Create-XML }
     [xml]$doc = Get-Content $file
     if ($doc.settings.arch -eq "unset") {
-        if ($arch -eq "i686") {
-            $get_arch = "i686"
+        if ($arch -eq "aarch64") {
+            $get_arch = "aarch64-armv9.2-a"
         }
         else {
-            $result = Read-KeyOrTimeout "Choose variant for 64bit builds: x86_64 or x86_64-v3 (for cpu with AVX2 support) [1=x86_64 / 2=x86_64-v3 (default=1)" "D1"
-            Write-Host ""
-            if ($result -eq 'D1') {
-                $get_arch = "x86_64"
-            }
-            elseif ($result -eq 'D2') {
-                $get_arch = "x86_64-v3"
-            }
-            else {
-                throw "Please enter valid input key."
-            }
+            $get_arch = "x86_64-v4"
         }
         $doc.settings.arch = $get_arch
         $doc.Save($file)
@@ -782,8 +772,7 @@ else {
 
 try {
     Check-PowershellVersion
-    # Sourceforge only support TLS 1.2
-    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls13
     $global:progressPreference = 'silentlyContinue'
     Upgrade-Mpv
     Upgrade-Ytplugin
